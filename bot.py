@@ -183,10 +183,10 @@ class Bot:
 
         landing_site_size = 40
 
-        if me.fuel < 300:
+        if me.fuel < 350:
             landing_site_size = 36
 
-        if me.fuel < 280:
+        if me.fuel < 340:
             landing_site_size = 32
 
         # Search for a suitable landing site
