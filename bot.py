@@ -144,7 +144,7 @@ class Bot:
         """
         instructions = Instructions()
 
-        verbose = False
+        verbose = True
 
         me = players[self.team]
         x, y = me.position
@@ -179,10 +179,10 @@ class Bot:
 
         landing_site_size = 40
 
-        if me.fuel < 300:
+        if me.fuel < 350:
             landing_site_size = 36
 
-        if me.fuel < 280:
+        if me.fuel < 340:
             landing_site_size = 32
 
         # Search for a suitable landing site
@@ -204,14 +204,14 @@ class Bot:
         else:
             # Move to the target
             if self.started_landing:
-                #location_limit = 100
-                location_limit = 300
+                location_limit = 150
             else:
                 location_limit = 3
 
             if abs(self.target_site - x) > location_limit:
 
-                #print("Goto X mode")
+                if verbose:
+                    print("Goto X mode")
                 if vy < 0:
                     instructions.main = True
 
@@ -251,6 +251,7 @@ class Bot:
 
                 position_diff = self.target_site - x
 
+                angle_factor = 1
                 direction_sign = 0
                 if self.target_site > x and vx > 0:
                     # Am to the left, going right
@@ -259,29 +260,43 @@ class Bot:
                     direction_sign = 0
 
                     if position_error > 3:
-                        if abs(vx) < 2:
+                        if abs(vx) > 0.7:
                             direction_sign = -1
 
                     else:
-                        if abs(vx) > 2:
+                        if abs(vx) > 0.7:
+                            angle_factor = 0.7
                             direction_sign = 1
 
+                    if position_error < 1:
+                        angle_factor = 0.5
+
                     if verbose:
-                        print("1 t:", self.target_site, "x:", x, "vx:", vx, "direction_sign", direction_sign)
+                        print("1 t:", self.target_site, "x:", x, "vx:", vx, "direction_sign", angle_factor*direction_sign)
 
                 elif self.target_site < x and vx > 0:
                     # Am to the right, going right
                     # Go left
 
                     direction_sign = 1
-                    #print("2 t:", self.target_site, "x:", x, "vx:", vx, "direction_sign", direction_sign)
+
+                    if position_error < 3 and abs(vx) < 1:
+                        angle_factor = 0.5
+
+                    if verbose:
+                        print("2 t:", self.target_site, "x:", x, "vx:", vx, "direction_sign", direction_sign)
 
                 elif self.target_site > x and vx < 0:
                     # Am to the left, going left
                     # Go right
 
                     direction_sign = -1
-                    #print("3 t:", self.target_site, "x:", x, "vx:", vx, "direction_sign", direction_sign)
+
+                    if position_error < 3 and abs(vx) < 1:
+                        angle_factor = 0.5
+
+                    if verbose:
+                        print("3 t:", self.target_site, "x:", x, "vx:", vx, "direction_sign", angle_factor*direction_sign)
 
                 elif self.target_site < x and vx < 0:
                     # Am to the right, going left
@@ -290,21 +305,29 @@ class Bot:
                     direction_sign = 0
 
                     if position_error > 3:
-                        if abs(vx) < 2:
+                        if abs(vx) > 0.7:
                             direction_sign = 1
 
                     else:
-                        if abs(vx) > 2:
+                        if abs(vx) > 0.7:
+                            angle_factor = 0.7
                             direction_sign = -1
 
-                    #print("4 t:", self.target_site, "x:", x, "vx:", vx, "direction_sign", direction_sign)
+                    if position_error < 2:
+                        angle_factor = 0.5
+
+                    if verbose:
+                        print("4 t:", self.target_site, "x:", x, "vx:", vx, "direction_sign", angle_factor*direction_sign)
 
                 if height_diff > 100:
-                    maximum_angle = min([position_error, 20])
+                    if angle_factor < 1:
+                        maximum_angle = min([position_error, 12])
+                    else:
+                        maximum_angle = min([position_error, 20])
                 else:
                     maximum_angle = min([position_error, 4])
 
-                command = rotate(current=head, target=direction_sign*maximum_angle)
+                command = rotate(current=head, target=angle_factor*direction_sign*maximum_angle)
                 if command == "left":
                     instructions.left = True
                 elif command == "right":
