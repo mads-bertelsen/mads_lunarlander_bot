@@ -144,6 +144,8 @@ class Bot:
         """
         instructions = Instructions()
 
+        verbose = False
+
         me = players[self.team]
         x, y = me.position
         vx, vy = me.velocity
@@ -165,10 +167,17 @@ class Bot:
                     self.initial_manoeuvre = False
             return instructions
 
+        landing_site_size = 40
+
+        if me.fuel < 300:
+            landing_site_size = 36
+
+        if me.fuel < 280:
+            landing_site_size = 32
 
         # Search for a suitable landing site
         if self.target_site is None:
-            self.target_site = find_landing_site(terrain)
+            self.target_site = find_landing_site(terrain, width=landing_site_size)
         else:
             if not good_landing_site(terrain, self.target_site, 28):
                 self.started_landing = False
@@ -247,7 +256,8 @@ class Bot:
                         if abs(vx) > 2:
                             direction_sign = 1
 
-                    #print("1 t:", self.target_site, "x:", x, "vx:", vx, "direction_sign", direction_sign)
+                    if verbose:
+                        print("1 t:", self.target_site, "x:", x, "vx:", vx, "direction_sign", direction_sign)
 
                 elif self.target_site < x and vx > 0:
                     # Am to the right, going right
