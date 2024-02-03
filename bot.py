@@ -144,7 +144,7 @@ class Bot:
         """
         instructions = Instructions()
 
-        verbose = True
+        verbose = False
 
         me = players[self.team]
         x, y = me.position
