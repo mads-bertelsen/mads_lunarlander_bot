@@ -8,6 +8,7 @@ from lunarlander import Instructions
 
 import random
 
+
 def rotate(current: float, target: float) -> Union[Literal["left", "right"], None]:
     if abs(current - target) < 0.5:
         return
@@ -40,7 +41,7 @@ def find_landing_site(terrain: np.ndarray, width=40) -> Union[int, None]:
 
 def good_landing_site(terrain, target_site, width):
     value = terrain[target_site]
-    for index in range(int(target_site- 0.5*width), int(target_site + 0.5*width)):
+    for index in range(int(target_site - 0.5 * width), int(target_site + 0.5 * width)):
         if terrain[index] != value:
             return False
 
@@ -48,7 +49,6 @@ def good_landing_site(terrain, target_site, width):
 
 
 def angle_for_go_to_x(target_x, x, y, vx, g, MAX_ANGLE=40, MAX_VX=30, verbose=False):
-
     estimate_ax = 2 * np.tan(MAX_ANGLE * np.pi / 180) * g / 3
 
     accelerate_x = False
@@ -61,7 +61,7 @@ def angle_for_go_to_x(target_x, x, y, vx, g, MAX_ANGLE=40, MAX_VX=30, verbose=Fa
         move_direction = 1
         accelerate_angle = -1
 
-    if move_direction*vx < 0:
+    if move_direction * vx < 0:
         # moving in the wrong direction
         if verbose:
             print("pos:", np.array([x, y]), "target_x:", np.array(target_x), "vx:", np.array([vx]), "WRONG WAY")
@@ -78,22 +78,26 @@ def angle_for_go_to_x(target_x, x, y, vx, g, MAX_ANGLE=40, MAX_VX=30, verbose=Fa
 
     if vx_limit < abs(vx):
         if verbose:
-            print("pos:", np.array([x, y]), "target_x:", np.array(target_x), "vx:", np.array([vx]), "SLOW TO TARGET, vlim = ", vx_limit)
+            print("pos:", np.array([x, y]), "target_x:", np.array(target_x), "vx:", np.array([vx]),
+                  "SLOW TO TARGET, vlim = ", vx_limit)
         return -MAX_ANGLE * accelerate_angle
 
-    if 0.8*vx_limit < abs(vx):
+    if 0.8 * vx_limit < abs(vx):
         if verbose:
-            print("pos:", np.array([x, y]), "target_x:", np.array(target_x), "vx:", np.array([vx]), "Coasting towards target, vlim=", vx_limit)
+            print("pos:", np.array([x, y]), "target_x:", np.array(target_x), "vx:", np.array([vx]),
+                  "Coasting towards target, vlim=", vx_limit)
         return 0
 
-    if 0.9*MAX_VX < vx:
+    if 0.9 * MAX_VX < vx:
         if verbose:
-            print("pos:", np.array([x, y]), "target_x:", np.array(target_x), "vx:", np.array([vx]), "Coasting towards target, (max) vlim=", vx_limit)
+            print("pos:", np.array([x, y]), "target_x:", np.array(target_x), "vx:", np.array([vx]),
+                  "Coasting towards target, (max) vlim=", vx_limit)
         return 0
 
     # If all good, go faster towards target
     if verbose:
-        print("pos:", np.array([x, y]), "target_x:", np.array(target_x), "vx:", np.array([vx]), "Towards target, vlim=", vx_limit)
+        print("pos:", np.array([x, y]), "target_x:", np.array(target_x), "vx:", np.array([vx]), "Towards target, vlim=",
+              vx_limit)
     return MAX_ANGLE * accelerate_angle
 
 
@@ -117,12 +121,12 @@ class Bot:
         np.set_printoptions(precision=2, suppress=True)
 
     def run(
-        self,
-        t: float,
-        dt: float,
-        terrain: np.ndarray,
-        players: dict,
-        asteroids: list,
+            self,
+            t: float,
+            dt: float,
+            terrain: np.ndarray,
+            players: dict,
+            asteroids: list,
     ):
         """
         This is the method that will be called at every time step to get the
@@ -179,10 +183,10 @@ class Bot:
 
         landing_site_size = 40
 
-        if me.fuel < 350:
+        if me.fuel < 300:
             landing_site_size = 36
 
-        if me.fuel < 340:
+        if me.fuel < 280:
             landing_site_size = 32
 
         # Search for a suitable landing site
@@ -204,14 +208,14 @@ class Bot:
         else:
             # Move to the target
             if self.started_landing:
-                location_limit = 150
+                # location_limit = 100
+                location_limit = 300
             else:
                 location_limit = 3
 
             if abs(self.target_site - x) > location_limit:
 
-                if verbose:
-                    print("Goto X mode")
+                # print("Goto X mode")
                 if vy < 0:
                     instructions.main = True
 
@@ -232,11 +236,11 @@ class Bot:
                     instructions.right = True
 
                 if self.old_vx is not None:
-                    acc = (vx - self.old_vx)/dt
+                    acc = (vx - self.old_vx) / dt
 
                     if abs(acc) > 0.1:
                         pass
-                        #print("x acceleration = ",  acc)
+                        # print("x acceleration = ",  acc)
 
                 self.old_vx = vx
 
@@ -251,7 +255,6 @@ class Bot:
 
                 position_diff = self.target_site - x
 
-                angle_factor = 1
                 direction_sign = 0
                 if self.target_site > x and vx > 0:
                     # Am to the left, going right
@@ -260,29 +263,21 @@ class Bot:
                     direction_sign = 0
 
                     if position_error > 3:
-                        if abs(vx) > 0.7:
+                        if abs(vx) < 2:
                             direction_sign = -1
 
                     else:
-                        if abs(vx) > 0.7:
-                            angle_factor = 0.7
+                        if abs(vx) > 2:
                             direction_sign = 1
 
-                    if position_error < 1:
-                        angle_factor = 0.5
-
                     if verbose:
-                        print("1 t:", self.target_site, "x:", x, "vx:", vx, "direction_sign", angle_factor*direction_sign)
+                        print("1 t:", self.target_site, "x:", x, "vx:", vx, "direction_sign", direction_sign)
 
                 elif self.target_site < x and vx > 0:
                     # Am to the right, going right
                     # Go left
 
                     direction_sign = 1
-
-                    if position_error < 3 and abs(vx) < 1:
-                        angle_factor = 0.5
-
                     if verbose:
                         print("2 t:", self.target_site, "x:", x, "vx:", vx, "direction_sign", direction_sign)
 
@@ -292,11 +287,8 @@ class Bot:
 
                     direction_sign = -1
 
-                    if position_error < 3 and abs(vx) < 1:
-                        angle_factor = 0.5
-
                     if verbose:
-                        print("3 t:", self.target_site, "x:", x, "vx:", vx, "direction_sign", angle_factor*direction_sign)
+                        print("3 t:", self.target_site, "x:", x, "vx:", vx, "direction_sign", direction_sign)
 
                 elif self.target_site < x and vx < 0:
                     # Am to the right, going left
@@ -305,34 +297,26 @@ class Bot:
                     direction_sign = 0
 
                     if position_error > 3:
-                        if abs(vx) > 0.7:
+                        if abs(vx) < 2:
                             direction_sign = 1
 
                     else:
-                        if abs(vx) > 0.7:
-                            angle_factor = 0.7
+                        if abs(vx) > 2:
                             direction_sign = -1
 
-                    if position_error < 2:
-                        angle_factor = 0.5
-
                     if verbose:
-                        print("4 t:", self.target_site, "x:", x, "vx:", vx, "direction_sign", angle_factor*direction_sign)
+                        print("4 t:", self.target_site, "x:", x, "vx:", vx, "direction_sign", direction_sign)
 
                 if height_diff > 100:
-                    if angle_factor < 1:
-                        maximum_angle = min([position_error, 12])
-                    else:
-                        maximum_angle = min([position_error, 20])
+                    maximum_angle = min([position_error, 20])
                 else:
                     maximum_angle = min([position_error, 4])
 
-                command = rotate(current=head, target=angle_factor*direction_sign*maximum_angle)
+                command = rotate(current=head, target=direction_sign * maximum_angle)
                 if command == "left":
                     instructions.left = True
                 elif command == "right":
                     instructions.right = True
-
 
                 """
                 maximum_angle = min([3 * position_error, 10])
@@ -346,12 +330,12 @@ class Bot:
                     instructions.left = True
                 elif command == "right":
                     instructions.right = True
-                
+
                 """
 
                 SAFETY_FACTOR = 0.8
                 estimated_y_acc = SAFETY_FACTOR * 3.0 * self.g * np.sin(maximum_angle * np.pi / 180)
-                vy_limit = estimated_y_acc * np.sqrt(2*height_diff/estimated_y_acc)
+                vy_limit = estimated_y_acc * np.sqrt(2 * height_diff / estimated_y_acc)
 
                 if vy_limit < 5:
                     vy_limit = 4.5
@@ -378,7 +362,5 @@ class Bot:
                 """
 
                 return instructions
-
-
 
         return instructions
