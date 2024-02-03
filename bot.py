@@ -154,8 +154,18 @@ class Bot:
         terrain_max = 25 + max(terrain)
 
         # Perform an initial rotation to get the LEM pointing upwards
-        if self.initial_manoeuvre and t > 1.0:
-            if vx > 10:
+        if self.initial_manoeuvre:
+            if y < terrain_max:
+                instructions.main = True
+                command = rotate(current=head, target=0)
+                if command == "left":
+                    instructions.left = True
+                elif command == "right":
+                    instructions.right = True
+
+                return instructions
+
+            if vx > 12:
                 instructions.main = True
             else:
                 command = rotate(current=head, target=0)
