@@ -186,13 +186,13 @@ class Bot:
             # Move to the target
             if self.started_landing:
                 #location_limit = 100
-                location_limit = 100000
+                location_limit = 300
             else:
                 location_limit = 3
 
             if abs(self.target_site - x) > location_limit:
 
-                print("Goto X mode")
+                #print("Goto X mode")
                 if vy < 0:
                     instructions.main = True
 
@@ -240,24 +240,28 @@ class Bot:
                     direction_sign = 0
 
                     if position_error > 3:
-                        if abs(vx) < 3:
+                        if abs(vx) < 2:
                             direction_sign = -1
 
-                    print("1 t:", self.target_site, "x:", x, "vx:", vx, "direction_sign", direction_sign)
+                    else:
+                        if abs(vx) > 2:
+                            direction_sign = 1
+
+                    #print("1 t:", self.target_site, "x:", x, "vx:", vx, "direction_sign", direction_sign)
 
                 elif self.target_site < x and vx > 0:
                     # Am to the right, going right
                     # Go left
 
                     direction_sign = 1
-                    print("2 t:", self.target_site, "x:", x, "vx:", vx, "direction_sign", direction_sign)
+                    #print("2 t:", self.target_site, "x:", x, "vx:", vx, "direction_sign", direction_sign)
 
                 elif self.target_site > x and vx < 0:
                     # Am to the left, going left
                     # Go right
 
                     direction_sign = -1
-                    print("3 t:", self.target_site, "x:", x, "vx:", vx, "direction_sign", direction_sign)
+                    #print("3 t:", self.target_site, "x:", x, "vx:", vx, "direction_sign", direction_sign)
 
                 elif self.target_site < x and vx < 0:
                     # Am to the right, going left
@@ -266,12 +270,19 @@ class Bot:
                     direction_sign = 0
 
                     if position_error > 3:
-                        if abs(vx) < 3:
+                        if abs(vx) < 2:
                             direction_sign = 1
 
-                    print("4 t:", self.target_site, "x:", x, "vx:", vx, "direction_sign", direction_sign)
+                    else:
+                        if abs(vx) > 2:
+                            direction_sign = -1
 
-                maximum_angle = min([position_error, 20])
+                    #print("4 t:", self.target_site, "x:", x, "vx:", vx, "direction_sign", direction_sign)
+
+                if height_diff > 100:
+                    maximum_angle = min([position_error, 20])
+                else:
+                    maximum_angle = min([position_error, 4])
 
                 command = rotate(current=head, target=direction_sign*maximum_angle)
                 if command == "left":
@@ -295,8 +306,8 @@ class Bot:
                 
                 """
 
-                SAFETY_FACTOR = 1.0
-                estimated_y_acc = SAFETY_FACTOR * 3.0 * self.g * np.cos(maximum_angle * np.pi / 180)
+                SAFETY_FACTOR = 0.8
+                estimated_y_acc = SAFETY_FACTOR * 3.0 * self.g * np.sin(maximum_angle * np.pi / 180)
                 vy_limit = estimated_y_acc * np.sqrt(2*height_diff/estimated_y_acc)
 
                 if vy_limit < 5:
@@ -309,8 +320,14 @@ class Bot:
 
                 if position_error > 3:
                     if abs(height_diff) > 60:
-                        if random.uniform(0, 1) > 0.9:
-                            instructions.main = True
+                        pass
+
+                if random.uniform(0, 1) > 0.85:
+                    instructions.main = True
+
+                if position_error > 10:
+                    if vy < 0:
+                        instructions.main = True
 
                 """
                 print("Descend mode x = ", np.array([x]), "y = ", np.array([y]), " vy = ", np.array([vy]),
